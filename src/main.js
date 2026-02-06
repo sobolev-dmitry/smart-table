@@ -5,6 +5,7 @@ import {data as sourceData} from "./data/dataset_1.js";
 
 import {initData} from "./data.js";
 import {processFormData} from "./lib/utils.js";
+import {initPagination} from "./components/pagination.js";  // ← Импорт функции пагинации
 
 import {initTable} from "./components/table.js";
 // @todo: подключение
@@ -20,8 +21,14 @@ const {data, ...indexes} = initData(sourceData);
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
 
+    // Преобразуем строковые значения в числа
+    const rowsPerPage = parseInt(state.rowsPerPage);
+    const page = parseInt(state.page ?? 1);
+
     return {
-        ...state
+        ...state,
+        rowsPerPage,
+        page
     };
 }
 
@@ -33,7 +40,7 @@ function render(action) {
     let state = collectState(); // состояние полей из таблицы
     let result = [...data]; // копируем для последующего изменения
     // @todo: использование
-
+    result = applyPagination(result, state, action);
 
     sampleTable.render(result)
 }
@@ -42,11 +49,21 @@ const sampleTable = initTable({
     tableTemplate: 'table',
     rowTemplate: 'row',
     before: [],
-    after: []
+    after: ['pagination']  // ← добавлен шаблон пагинации в конец таблицы
 }, render);
 
 // @todo: инициализация
-
+const applyPagination = initPagination(
+    sampleTable.pagination.elements,            // передаём элементы пагинации из шаблона
+    (el, page, isCurrent) => {                // колбэк для заполнения кнопок страниц
+        const input = el.querySelector('input');
+        const label = el.querySelector('span');
+        input.value = page;
+        input.checked = isCurrent;
+        label.textContent = page;
+        return el;
+    }
+);
 
 const appRoot = document.querySelector('#app');
 appRoot.appendChild(sampleTable.container);
