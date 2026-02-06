@@ -1,17 +1,15 @@
-import './fonts/ys-display/fonts.css'
-import './style.css'
+import './fonts/ys-display/fonts.css';
+import './style.css';
 
 import {data as sourceData} from "./data/dataset_1.js";
 
 import {initData} from "./data.js";
 import {processFormData} from "./lib/utils.js";
-import {initPagination} from "./components/pagination.js";  // ← Импорт функции пагинации
-
+import {initPagination} from "./components/pagination.js";
+import {initSorting} from "./components/sorting.js";  // ← Импорт модуля сортировки
 import {initTable} from "./components/table.js";
-// @todo: подключение
 
-
-// Исходные данные используемые в render()
+// Исходные данные, используемые в render()
 const {data, ...indexes} = initData(sourceData);
 
 /**
@@ -39,23 +37,27 @@ function collectState() {
 function render(action) {
     let state = collectState(); // состояние полей из таблицы
     let result = [...data]; // копируем для последующего изменения
-    // @todo: использование
+
+    // Применяем пагинацию
     result = applyPagination(result, state, action);
 
-    sampleTable.render(result)
+    // Применяем сортировку
+    result = applySorting(result, state, action);  // ← Применение сортировки
+
+    sampleTable.render(result);
 }
 
 const sampleTable = initTable({
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: [],
-    after: ['pagination']  // ← добавлен шаблон пагинации в конец таблицы
+    before: ['header'],  // ← Добавляем шаблон заголовка с кнопками сортировки
+    after: ['pagination']
 }, render);
 
-// @todo: инициализация
+// Инициализация пагинации
 const applyPagination = initPagination(
-    sampleTable.pagination.elements,            // передаём элементы пагинации из шаблона
-    (el, page, isCurrent) => {                // колбэк для заполнения кнопок страниц
+    sampleTable.pagination.elements,
+    (el, page, isCurrent) => {
         const input = el.querySelector('input');
         const label = el.querySelector('span');
         input.value = page;
@@ -64,6 +66,12 @@ const applyPagination = initPagination(
         return el;
     }
 );
+
+// Инициализация сортировки
+const applySorting = initSorting([
+    sampleTable.header.elements.sortByDate,      // ← Кнопка сортировки по дате
+    sampleTable.header.elements.sortByTotal     // ← Кнопка сортировки по сумме
+]);
 
 const appRoot = document.querySelector('#app');
 appRoot.appendChild(sampleTable.container);
