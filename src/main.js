@@ -6,8 +6,10 @@ import {data as sourceData} from "./data/dataset_1.js";
 import {initData} from "./data.js";
 import {processFormData} from "./lib/utils.js";
 import {initPagination} from "./components/pagination.js";
-import {initSorting} from "./components/sorting.js";  // ← Импорт модуля сортировки
+import {initSorting} from "./components/sorting.js";
 import {initTable} from "./components/table.js";
+import {initFiltering} from "./components/filtering.js";
+import {initSearching} from "./components/searching.js";
 
 // Исходные данные, используемые в render()
 const {data, ...indexes} = initData(sourceData);
@@ -38,11 +40,17 @@ function render(action) {
     let state = collectState(); // состояние полей из таблицы
     let result = [...data]; // копируем для последующего изменения
 
+    // Применяем поиск
+    result = applySearching(result, state, action);
+
+    // Применяем фильтрацию
+    result = applyFiltering(result, state, action);
+
     // Применяем пагинацию
     result = applyPagination(result, state, action);
 
     // Применяем сортировку
-    result = applySorting(result, state, action);  // ← Применение сортировки
+    result = applySorting(result, state, action);
 
     sampleTable.render(result);
 }
@@ -50,7 +58,7 @@ function render(action) {
 const sampleTable = initTable({
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: ['header'],  // ← Добавляем шаблон заголовка с кнопками сортировки
+    before: ['search', 'header', 'filter'],
     after: ['pagination']
 }, render);
 
@@ -69,9 +77,18 @@ const applyPagination = initPagination(
 
 // Инициализация сортировки
 const applySorting = initSorting([
-    sampleTable.header.elements.sortByDate,      // ← Кнопка сортировки по дате
-    sampleTable.header.elements.sortByTotal     // ← Кнопка сортировки по сумме
+    sampleTable.header.elements.sortByDate,
+    sampleTable.header.elements.sortByTotal
 ]);
+
+// Инициализация фильтрации
+const applyFiltering = initFiltering(
+    sampleTable.filter.elements,
+    indexes, data
+);
+
+// Инициализация поиска
+const applySearching = initSearching('search');  // ← Исправлено: было 'searchQuery'
 
 const appRoot = document.querySelector('#app');
 appRoot.appendChild(sampleTable.container);
