@@ -14,6 +14,7 @@ import { initSearching } from "./components/searching.js";
 // Исходные данные, используемые в render()
 const api = initData(sourceData); // присваиваем результат initData константе api
 
+
 /**
  * Сбор и обработка полей из таблицы
  * @returns {Object}
@@ -41,10 +42,10 @@ async function render(action) { // делаем функцию render асинх
     let query = {}; // здесь будут формироваться параметры запроса
 
     // Применяем поиск
-    // result = applySearching(result, state, action);
+    query = applySearching(query, state, action); // обновляем query параметрами поиска
 
     query = applyFiltering(query, state, action); // обновляем query параметрами фильтрации
-
+    
     query = applyPagination(query, state, action); // обновляем query параметрами пагинации
 
     // Применяем сортировку
