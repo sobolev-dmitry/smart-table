@@ -66,6 +66,14 @@ const sampleTable = initTable({
     after: ['pagination']
 }, render);
 
+// Обработчик кнопок очистки полей
+document.addEventListener('click', ({target}) => {
+    if (target.name === 'clear') {
+        target.parentElement.querySelector('input').value = '';
+        render();
+    }
+});
+
 // Инициализация пагинации
 const {applyPagination, updatePagination} = initPagination(
     sampleTable.pagination.elements,
