@@ -42,14 +42,16 @@ async function render(action) { // делаем функцию render асинх
     let query = {}; // здесь будут формироваться параметры запроса
 
     // Применяем поиск
-    query = applySearching(query, state, action); // обновляем query параметрами поиска
+    query = applySearching(query, state, action);
 
-    query = applyFiltering(query, state, action); // обновляем query параметрами фильтрации
-    
-    query = applyPagination(query, state, action); // обновляем query параметрами пагинации
+    // Применяем фильтрацию
+    query = applyFiltering(query, state, action);
+
+    // Применяем пагинацию
+    query = applyPagination(query, state, action);
 
     // Применяем сортировку
-    // result = applySorting(result, state, action);
+    query = applySorting(query, state, action);
 
     // Получаем данные с API
     const { total, items } = await api.getRecords(query);
@@ -105,5 +107,5 @@ async function init() {
     });
 }
 
-// вызов init render
+// Вызов init render
 init().then(render);
