@@ -5,21 +5,30 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
     const pageTemplate = pages.firstElementChild.cloneNode(true); // берём первый элемент как шаблон
     pages.firstElementChild.remove(); // удаляем оригинал из контейнера
 
-    return (data, state, action) => {
-        // @todo: #2.1 — посчитать количество страниц, объявить переменные и константы
-        const rowsPerPage = state.rowsPerPage;                  // количество строк на странице
-        const pageCount = Math.ceil(data.length / rowsPerPage); // общее число страниц (округлено вверх)
-        let page = state.page;                                 // текущая страница
+    let pageCount; // временная переменная для хранения количества страниц при последней отрисовке
+
+    const applyPagination = (query, state, action) => {
+        const limit = state.rowsPerPage;
+        let page = state.page;
 
         // @todo: #2.6 — обработать действия
         if (action) {
             switch (action.name) {
                 case 'prev': page = Math.max(1, page - 1); break;            // переход на предыдущую страницу
-                case 'next': page = Math.min(pageCount, page + 1); break;  // переход на следующую страницу
+                case 'next': page = Math.min(pageCount || 1, page + 1); break;  // переход на следующую страницу
                 case 'first': page = 1; break;                             // переход на первую страницу
-                case 'last': page = pageCount; break;                     // переход на последнюю страницу
+                case 'last': page = pageCount || 1; break;             // переход на последнюю страницу
             }
         }
+
+        return Object.assign({}, query, { // добавим параметры к query, но не изменяем исходный объект
+            limit,
+            page
+        });
+    };
+
+    const updatePagination = (total, { page, limit }) => {
+        pageCount = Math.ceil(total / limit);
 
         // @todo: #2.4 — получить список видимых страниц и вывести их
         const visiblePages = getPages(page, pageCount, 5); // получаем массив номеров страниц для отображения (максимум 5)
@@ -31,12 +40,13 @@ export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) =
         );
 
         // @todo: #2.5 — обновить статус пагинации
-        fromRow.textContent = (page - 1) * rowsPerPage + 1;            // с какой строки выводим
-        toRow.textContent = Math.min((page * rowsPerPage), data.length); // до какой строки выводим (с учётом последней страницы)
-        totalRows.textContent = data.length;                           // общее количество строк
+        fromRow.textContent = (page - 1) * limit + 1;            // с какой строки выводим
+        toRow.textContent = Math.min((page * limit), total); // до какой строки выводим (с учётом последней страницы)
+        totalRows.textContent = total;                           // общее количество строк
+    };
 
-        // @todo: #2.2 — посчитать сколько строк нужно пропустить и получить срез данных
-        const skip = (page - 1) * rowsPerPage;            // сколько строк нужно пропустить
-        return data.slice(skip, skip + rowsPerPage);    // получаем нужную часть строк
-    }
-}
+    return {
+        updatePagination,
+        applyPagination
+    };
+};
