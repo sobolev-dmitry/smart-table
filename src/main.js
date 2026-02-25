@@ -14,7 +14,6 @@ import { initSearching } from "./components/searching.js";
 // Исходные данные, используемые в render()
 const api = initData(sourceData); // присваиваем результат initData константе api
 
-
 /**
  * Сбор и обработка полей из таблицы
  * @returns {Object}
