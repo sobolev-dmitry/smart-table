@@ -43,8 +43,7 @@ async function render(action) { // делаем функцию render асинх
     // Применяем поиск
     // result = applySearching(result, state, action);
 
-    // Применяем фильтрацию
-    // result = applyFiltering(result, state, action);
+    query = applyFiltering(query, state, action); // обновляем query параметрами фильтрации
 
     query = applyPagination(query, state, action); // обновляем query параметрами пагинации
 
@@ -85,10 +84,9 @@ const applySorting = initSorting([
 ]);
 
 // Инициализация фильтрации
-// const applyFiltering = initFiltering(
-//     sampleTable.filter.elements,
-//     indexes, data
-// );
+const {applyFiltering, updateIndexes} = initFiltering(
+    sampleTable.filter.elements
+);
 
 // Инициализация поиска
 const applySearching = initSearching('search');
@@ -99,7 +97,12 @@ appRoot.appendChild(sampleTable.container);
 // Объявляем асинхронную функцию init()
 async function init() {
     const indexes = await api.getIndexes(); // получаем индексы
+
+    // Обновляем индексы в фильтрах
+    updateIndexes(sampleTable.filter.elements, {
+        searchBySeller: indexes.sellers
+    });
 }
 
-// Заменяем вызов render на init().then(render)
+// вызов init render
 init().then(render);
